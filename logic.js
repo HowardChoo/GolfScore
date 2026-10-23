@@ -30,8 +30,12 @@
     return h.putts != null;
   }
 
+  // h.fixScore · h.fixGir: 엑셀에서 가져온 홀의 원래 값. 샷 기록만으로 맞지 않을 때만 들어 있고,
+  // 앱에서 그 홀을 고치면 지워져 자동 계산으로 돌아간다
   function score(h) {
-    return isDone(h) ? h.shots.length + h.putts + penalty(h) : null;
+    if (!isDone(h)) return null;
+    if (h.fixScore != null) return h.fixScore;
+    return h.shots.length + h.putts + penalty(h);
   }
 
   // 그린에 올라가기까지 친 타수(벌타 포함). 그린에 못 올렸으면 null
@@ -48,6 +52,7 @@
 
   function gir(h, par) {
     if (!isDone(h)) return '';
+    if (h.fixGir) return h.fixGir;
     const n = strokesToGreen(h);
     return n != null && n <= par - 2 ? 'O' : 'X';
   }

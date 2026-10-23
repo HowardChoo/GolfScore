@@ -387,8 +387,8 @@
           ${[0, 1, 2, 3, 4, 5].map((n) => `<button class="ch ${h.putts === n ? 'on' : ''}" data-act="putts" data-arg="${n}">${n}</button>`).join('')}
         </div>
         <div class="hole-info">
-          <div class="hi"><small>스코어</small><b class="${diffClass(sc == null ? null : sc - par)}">${sc == null ? '-' : sc}</b></div>
-          <div class="hi"><small>GIR</small><b>${Golf.gir(h, par) || '-'}</b></div>
+          <div class="hi"><small>스코어${h.fixScore != null ? ' (엑셀)' : ''}</small><b class="${diffClass(sc == null ? null : sc - par)}">${sc == null ? '-' : sc}</b></div>
+          <div class="hi"><small>GIR${h.fixGir ? ' (엑셀)' : ''}</small><b>${Golf.gir(h, par) || '-'}</b></div>
           <div class="hi pen"><small>벌타${h.pen != null && h.pen !== autoPen ? ' <button class="link" data-act="pen" data-arg="auto">자동으로</button>' : ''}</small>
             <span><button data-act="pen" data-arg="-1">−</button><b>${pen}</b><button data-act="pen" data-arg="1">+</button></span></div>
           <button class="hi ss" data-act="ss"><small>샌드세이브 ${h.ss ? '(수정)' : '(자동)'}</small><b>${ss}</b></button>
@@ -412,8 +412,15 @@
     render();
   }
 
+  // 홀을 고치면 엑셀에서 가져온 고정값을 버리고 자동 계산으로 돌아간다
+  function touch(h) {
+    delete h.fixScore;
+    delete h.fixGir;
+  }
+
   function commitShot() {
     const h = round().holes[ui.hole];
+    touch(h);
     const shot = { c: ui.draft.c, r: ui.draft.r, b: ui.draft.b };
     if (ui.edit != null) h.shots[ui.edit] = shot;
     else h.shots.push(shot);
@@ -671,7 +678,9 @@
       render();
     },
     delShot: () => {
-      round().holes[ui.hole].shots.splice(ui.edit, 1);
+      const h = round().holes[ui.hole];
+      touch(h);
+      h.shots.splice(ui.edit, 1);
       ui.edit = null;
       ui.draft = { c: '', r: '', b: '' };
       save();
@@ -679,12 +688,14 @@
     },
     putts: (n) => {
       const h = round().holes[ui.hole];
+      touch(h);
       h.putts = h.putts === +n ? null : +n;
       save();
       render();
     },
     pen: (arg) => {
       const h = round().holes[ui.hole];
+      touch(h);
       if (arg === 'auto') h.pen = null;
       else h.pen = Math.max(0, Golf.penalty(h) + Number(arg));
       save();

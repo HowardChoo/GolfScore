@@ -1,6 +1,6 @@
 // 오프라인 지원: 앱 파일은 캐시 우선, 날씨 API는 네트워크만 사용
 // 앱 파일을 고치면 VERSION을 올려야 휴대폰에 새 버전이 들어간다
-const VERSION = 'v3';
+const VERSION = 'v4';
 const FILES = [
   './', 'index.html', 'style.css', 'logic.js', 'app.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',

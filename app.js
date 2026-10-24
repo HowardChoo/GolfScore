@@ -32,7 +32,6 @@
     edit: null, // 수정 중인 샷 번호
     half: null, // 홀 목록에 보이는 쪽 (0 전반, 1 후반). null이면 현재 홀 쪽
     setup: null,
-    header: false,
   };
 
   const round = () => db.rounds.find((r) => r.id === ui.roundId);
@@ -88,20 +87,6 @@
     t.hidden = false;
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { t.hidden = true; }, 2200);
-  }
-
-  async function copyText(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (e) {
-      // http 접속 등 clipboard API를 못 쓰는 경우
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-    }
   }
 
   // 공유 시트가 있으면 파일로 공유, 없으면 다운로드
@@ -381,11 +366,15 @@
         </div>` : '<p class="muted small hint">결과를 누르면 샷이 저장됩니다. 구질은 생략할 수 있어요.</p>'}
       </section>
 
-      <section class="pad tight">
+      <section class="pad tight entry">
         <div class="label">퍼팅</div>
         <div class="grid g-putt">
           ${[0, 1, 2, 3, 4, 5].map((n) => `<button class="ch ${h.putts === n ? 'on' : ''}" data-act="putts" data-arg="${n}">${n}</button>`).join('')}
         </div>
+      </section>
+
+      <section class="pad tight result">
+        <div class="label">홀 결과</div>
         <div class="hole-info">
           <div class="hi"><small>스코어${h.fixScore != null ? ' (엑셀)' : ''}</small><b class="${diffClass(sc == null ? null : sc - par)}">${sc == null ? '-' : sc}</b></div>
           <div class="hi"><small>GIR${h.fixGir ? ' (엑셀)' : ''}</small><b>${Golf.gir(h, par) || '-'}</b></div>
@@ -437,6 +426,7 @@
     const sum = (a) => a.reduce((s, x) => s + (x || 0), 0);
     return `
       <table class="card">
+        <colgroup><col>${idx.map(() => '<col class="c-hole">').join('')}<col class="c-sum"></colgroup>
         <tr><th>${esc(from ? r.courseIn : r.courseOut) || (from ? 'IN' : 'OUT')}</th>${idx.map((i) => `<th>${(i % 9) + 1}</th>`).join('')}<th>계</th></tr>
         <tr><td>파</td>${idx.map((i) => `<td>${r.pars[i]}</td>`).join('')}<td>${sum(idx.map((i) => r.pars[i]))}</td></tr>
         <tr><td>스코어</td>${idx.map((i, k) => `<td><button class="cs ${diffClass(scores[k] == null ? null : scores[k] - r.pars[i])}" data-act="hole" data-arg="${i}">${scores[k] == null ? '·' : scores[k]}</button></td>`).join('')}<td><b>${sum(scores)}</b></td></tr>
@@ -448,33 +438,34 @@
     const r = round();
     const s = Golf.stats(r);
     const exp = r.expense || {};
-    const stat = (label, value) => `<div class="stat"><small>${label}</small><b>${value}</b></div>`;
+    const stat = (label, value, cls = '') => `<div class="stat ${cls}"><small>${label}</small><b>${value}</b></div>`;
+    const diff = s.done ? diffText(s.total - r.pars.filter((p, k) => Golf.isDone(r.holes[k])).reduce((a, b) => a + b, 0)) : '';
     return `
       <header class="bar">
         <button class="back" data-act="home">‹</button>
         <h1>${esc(r.club)} <small>${esc(r.date)} ${esc(r.time)}</small></h1>
       </header>
 
-      <section class="pad">
+      <section class="pad pb0">
         <div class="headline">
           <b>${s.total || '-'}</b>
-          <span>${s.done ? diffText(s.total - r.pars.filter((p, k) => Golf.isDone(r.holes[k])).reduce((a, b) => a + b, 0)) : ''} · ${s.done}/18홀</span>
+          <span>${diff} · ${s.done}/18홀</span>
           <button data-act="resume">홀 기록 ›</button>
         </div>
         <div class="scroll-x">${cardTable(r, 0)}${cardTable(r, 9)}</div>
         <div class="stats">
-          ${stat('퍼팅', s.putts)}${stat('벌타', s.penalty)}
-          ${stat('FW 안착', `${pct(s.fwPct)} <small>${s.fwHits}/${s.fwHoles}</small>`)}
+          ${stat('TOTAL', `${s.total || '-'} <small>${diff}</small>`, 'main')}
+          ${stat('PUTTS', s.putts)}${stat('PENALTY', s.penalty)}
+          ${stat('FHR', `${pct(s.fwPct)} <small>${s.fwHits}/${s.fwHoles}</small>`)}
           ${stat('GIR', `${pct(s.girPct)} <small>${s.gir}/18</small>`)}
-          ${stat('샌드세이브', `${pct(s.ssPct)} <small>${s.ssO}/${s.ssO + s.ssX}</small>`)}
-          ${stat('이글/버디', `${s.eagle}/${s.birdie}`)}
-          ${stat('파/보기', `${s.parCount}/${s.bogey}`)}
-          ${stat('더블 이상', s.overDouble)}
+          ${stat('S.SAVE', `${pct(s.ssPct)} <small>${s.ssO}/${s.ssO + s.ssX}</small>`)}
+          ${stat('EAGLE/BIRDIE', `${s.eagle}/${s.birdie}`)}
+          ${stat('PAR/BOGEY', `${s.parCount}/${s.bogey}`)}
+          ${stat('DOUBLE+', s.overDouble)}
         </div>
         <div class="stats flights">
-          ${stat('ST↑', pct(s.straight))}${stat('SL→', pct(s.slice))}${stat('PS↗', pct(s.push))}${stat('HK←', pct(s.hook))}${stat('PU↖', pct(s.pull))}
+          ${stat('ST↑', pct(s.straight))}${stat('SL→', pct(s.slice))}${stat('PS↗', pct(s.push))}${stat('HK←', pct(s.hook))}${stat('PU↖', pct(s.pull))}${stat('FA↓', pct(s.fat))}${stat('TO↕', pct(s.top))}
         </div>
-        <p class="muted small">구질 비율은 티샷 기준, 18홀로 나눈 값 (엑셀과 같음)</p>
       </section>
 
       <section class="pad form">
@@ -506,15 +497,6 @@
       <section class="pad form">
         <h2>엑셀로 보내기 (메일)</h2>
         <button class="primary" data-act="mailFiles">메일로 보내기 (CSV 첨부)</button>
-        <p class="muted small">공유 창에서 Gmail·메일 앱을 고르고 받는 사람에 내 메일을 넣으세요. summary · round(동반자·비용·날씨·메모) · shots(샷 기록) CSV 3개가 첨부됩니다.
-          PC에서 summary.csv를 열어 행을 복사한 뒤 Summary 시트 다음 빈 행 A열에 붙여 넣으면 됩니다.</p>
-        <details>
-          <summary>클립보드로 복사</summary>
-          <label class="check"><input type="checkbox" data-field="header" ${ui.header ? 'checked' : ''}> 머리글 행 포함</label>
-          <button data-act="copySummary">Summary 행 복사 (A~AB 28칸)</button>
-          <button data-act="copyRound">라운드 상세 복사</button>
-          <button data-act="copyShots">샷 기록 복사 (한 샷당 1행)</button>
-        </details>
       </section>
 
       <section class="pad row">
@@ -525,17 +507,12 @@
 
   function onSummaryField(field, value, el) {
     const r = round();
-    if (field === 'header') { ui.header = el.checked; return; }
     if (field === 'weather') r.weather = value.trim();
     else if (field.startsWith('cscore')) r.companions[+field.slice(6)].score = value;
     else if (field.startsWith('exp:')) r.expense[field.slice(4)] = value === '' ? '' : Number(value);
     else if (field.startsWith('note')) r.notes[+field.slice(4)] = value;
     save();
     if (field.startsWith('exp:')) render();
-  }
-
-  function rowsWithHeader(header, rows) {
-    return ui.header ? [header].concat(rows) : rows;
   }
 
   function mailSubject(r) {
@@ -708,18 +685,6 @@
       h.ss = order[(order.indexOf(h.ss) + 1) % order.length];
       save();
       render();
-    },
-    copySummary: async () => {
-      await copyText(Golf.toTsv(rowsWithHeader(Golf.SUMMARY_HEADER, [Golf.summaryRow(numbered(round()))])));
-      toast('Summary 행을 복사했습니다');
-    },
-    copyRound: async () => {
-      await copyText(Golf.toTsv(rowsWithHeader(Golf.ROUND_HEADER, [Golf.roundRow(numbered(round()))])));
-      toast('라운드 상세를 복사했습니다');
-    },
-    copyShots: async () => {
-      await copyText(Golf.toTsv(rowsWithHeader(Golf.SHOT_HEADER, Golf.shotRows(numbered(round())))));
-      toast('샷 기록을 복사했습니다');
     },
     mailFiles,
     weather: fetchWeather,

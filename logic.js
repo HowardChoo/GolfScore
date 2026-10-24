@@ -110,6 +110,8 @@
       push: flight('PS'),
       hook: flight('HK'),
       pull: flight('PU'),
+      fat: flight('FA'),
+      top: flight('TO'),
       expense: sum(EXPENSES.map(([k]) => Number(exp[k]) || 0)),
     };
   }
@@ -200,10 +202,6 @@
     return rows;
   }
 
-  function toTsv(rows) {
-    return rows.map((r) => r.map(cell).join('\t')).join('\r\n');
-  }
-
   function toCsv(rows) {
     const q = (v) => {
       const s = cell(v);
@@ -253,7 +251,7 @@
   const api = {
     CLUBS, RESULTS, FLIGHTS, EXPENSES, SUMMARY_HEADER, SHOT_HEADER, ROUND_HEADER,
     newHole, penalty, isDone, score, gir, sandSave, stats,
-    summaryRow, roundRow, shotRows, toTsv, toCsv, weatherText,
+    summaryRow, roundRow, shotRows, toCsv, weatherText,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Golf = api;

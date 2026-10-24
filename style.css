@@ -87,12 +87,14 @@ small { font-size: 11px; }
 
 .pad { padding: 12px 14px; }
 .pad.tight { padding: 8px 12px; }
+.pad.pb0 { padding-bottom: 0; }
 
 .row { display: flex; gap: 8px; }
 .row > * { flex: 1; min-width: 0; }
 .row.center { align-items: center; }
 .row > .num, .row > .center, .row > b { flex: 0 0 auto; }
 .form > * + * { margin-top: 8px; }
+.form > h2:first-child { margin-top: 0; }
 .form label { display: block; font-size: 13px; color: var(--muted); }
 .form label input { margin-top: 2px; color: var(--text); font-size: 16px; }
 .form label.narrow { flex: 0 0 64px; }
@@ -101,10 +103,6 @@ small { font-size: 11px; }
 .form label.check input { width: 22px; min-height: 22px; margin: 0; }
 .form button { width: 100%; }
 .form .row button { width: auto; flex: 0 0 auto; }
-.form details { border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: var(--card); }
-.form details summary { min-height: 44px; display: flex; align-items: center; color: var(--muted); cursor: pointer; }
-.form details[open] { padding-bottom: 12px; }
-.form details > * + * { margin-top: 8px; }
 
 /* 홈 */
 .rounds { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -196,13 +194,14 @@ small { font-size: 11px; }
 /* 입력 버튼 */
 .entry { background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .entry.is-edit { background: var(--green-l); }
+.entry + .entry { margin-top: 8px; }
 .entry > * + * { margin-top: 8px; }
 .entry-title, .label { font-size: 13px; color: var(--muted); }
 .hint { margin: 6px 0 0; }
 .grid { display: grid; gap: 5px; }
 .g-club { grid-template-columns: repeat(7, 1fr); }
 .g-res, .g-flt { grid-template-columns: repeat(7, 1fr); }
-.g-putt { grid-template-columns: repeat(6, 1fr); margin: 4px 0 10px; }
+.g-putt { grid-template-columns: repeat(6, 1fr); }
 .ch {
   padding: 0;
   min-height: 48px;
@@ -221,6 +220,9 @@ small { font-size: 11px; }
 .g-flt .ch { background: #f5f4fa; }
 .g-res .ch.on, .g-flt .ch.on { background: var(--green); }
 
+.result { margin-top: 8px; background: var(--green-l); border-top: 2px solid var(--green); }
+.result .label { color: var(--green); font-weight: 600; }
+.result > * + * { margin-top: 6px; }
 .hole-info { display: grid; grid-template-columns: 1fr 1fr 1.6fr 1.4fr; gap: 5px; }
 .hi {
   display: flex;
@@ -261,18 +263,26 @@ small { font-size: 11px; }
 .headline > b { font-size: 40px; line-height: 1; }
 .headline span { flex: 1; color: var(--muted); }
 .scroll-x { overflow-x: auto; }
-.card { width: 100%; border-collapse: collapse; background: var(--card); margin-bottom: 8px; font-size: 14px; text-align: center; }
+.card { width: 100%; table-layout: fixed; border-collapse: collapse; background: var(--card); margin-bottom: 8px; font-size: 14px; text-align: center; }
 .card th, .card td { border: 1px solid var(--line); padding: 2px; }
 .card th { background: var(--green-l); font-weight: 600; }
-.card th:first-child { font-size: 12px; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 홀·합계 칸은 고정 최소 폭, 남는 폭은 전부 첫 칸(코스 이름)에 — 이름 길이와 무관하게 칸 폭이 같다 */
+.card .c-hole { width: 24px; }
+.card .c-sum { width: 34px; }
+.card th:first-child, .card td:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card th:first-child { font-size: 12px; }
 .card td:first-child { font-size: 12px; color: var(--muted); }
 .cs { min-height: 30px; width: 100%; padding: 0; border: 0; background: none; font-weight: 700; }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
-.stats.flights { grid-template-columns: repeat(5, 1fr); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+.stats.flights { grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.stats.flights .stat { padding: 6px 2px; text-align: center; }
+.stats.flights .stat b { font-size: 14px; }
 .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; }
 .stat small { display: block; color: var(--muted); }
 .stat b { font-size: 17px; }
 .stat b small { display: inline; font-weight: 400; }
+.stat.main { background: var(--green-l); border: 2px solid var(--green); }
+.stat.main b { font-size: 24px; }
 
 #toast {
   position: fixed;

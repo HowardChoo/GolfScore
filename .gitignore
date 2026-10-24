@@ -3,4 +3,6 @@
 *.xls
 ~$*
 *.csv
+# 기본 골프장·코스 목록은 앱과 함께 배포한다 (개인 정보 없음)
+!courses.csv
 golf-backup-*.json

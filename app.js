@@ -23,6 +23,24 @@
 
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
 
+  // courses.csv의 기본 골프장·코스. 저장하지 않고 목록·파 채우기에만 쓰며, 이 기기에 저장된 코스가 우선한다
+  let presets = {};
+  fetch('courses.csv')
+    .then((res) => (res.ok ? res.text() : ''))
+    .then((text) => {
+      presets = Golf.parseCourses(text);
+      if (ui.view === 'setup') render();
+    })
+    .catch(() => {});
+
+  function clubNames() {
+    return [...new Set(Object.keys(db.clubs).concat(Object.keys(presets)))].sort((a, b) => a.localeCompare(b, 'ko'));
+  }
+
+  function coursesOf(name) {
+    return { ...presets[name], ...(db.clubs[name] && db.clubs[name].courses) };
+  }
+
   // ---------- 화면 상태 ----------
   const ui = {
     view: 'home',
@@ -202,7 +220,7 @@
   function viewSetup() {
     const s = ui.setup;
     const club = db.clubs[s.club];
-    const courses = club ? Object.keys(club.courses) : [];
+    const courses = Object.keys(coursesOf(s.club));
     const loc = s.lat != null ? `${s.lat}, ${s.lon}` : (club && club.lat != null ? `${club.lat}, ${club.lon} (저장된 위치)` : '없음');
     return `
       <header class="bar">
@@ -215,7 +233,7 @@
           <label>티타임<input type="time" data-field="time" value="${esc(s.time)}"></label>
         </div>
         <label>골프장<input data-field="club" list="clubList" value="${esc(s.club)}" placeholder="예: 클럽모우CC"></label>
-        <datalist id="clubList">${Object.keys(db.clubs).map((c) => `<option value="${esc(c)}">`).join('')}</datalist>
+        <datalist id="clubList">${clubNames().map((c) => `<option value="${esc(c)}">`).join('')}</datalist>
         <datalist id="courseList">${courses.map((c) => `<option value="${esc(c)}">`).join('')}</datalist>
 
         <label>OUT 코스 (1~9번)<input data-field="courseOut" list="courseList" value="${esc(s.courseOut)}" placeholder="예: 마운틴"></label>
@@ -245,10 +263,10 @@
       return;
     }
     s[field] = value.trim();
-    const club = db.clubs[s.club];
+    const courses = coursesOf(s.club);
     // 저장된 코스 이름이면 파를 채운다
-    if (club && field === 'courseOut' && club.courses[s.courseOut]) s.parsOut = club.courses[s.courseOut].slice();
-    if (club && field === 'courseIn' && club.courses[s.courseIn]) s.parsIn = club.courses[s.courseIn].slice();
+    if (field === 'courseOut' && courses[s.courseOut]) s.parsOut = courses[s.courseOut].slice();
+    if (field === 'courseIn' && courses[s.courseIn]) s.parsIn = courses[s.courseIn].slice();
     if (field === 'club' || field.startsWith('course')) render();
   }
 

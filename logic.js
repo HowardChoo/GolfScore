@@ -82,7 +82,9 @@
     const ssList = holes.map((h, i) => sandSave(h, pars[i]));
     const ssO = ssList.filter((x) => x === 'O').length;
     const ssX = ssList.filter((x) => x === 'X').length;
-    const flight = (code) => tees.filter((t) => t && t.b && t.b.startsWith(code)).length / 18;
+    // 구질 비율: 구질을 적은 모든 샷(티샷만이 아님) 중 비율. 기록이 없으면 ''
+    const flights = holes.flatMap((h) => h.shots.map((x) => x.b)).filter(Boolean);
+    const flight = (code) => (flights.length ? flights.filter((b) => b.startsWith(code)).length / flights.length : '');
     const exp = round.expense || {};
     return {
       done: holes.filter(isDone).length,
@@ -210,6 +212,18 @@
     return rows.map((r) => r.map(q).join(',')).join('\r\n');
   }
 
+  // courses.csv(골프장,코스,1~9번 홀 파,...) → { 골프장: { 코스: [파 9개] } }. 첫 줄은 머리글, 형식이 틀린 줄은 건너뛴다
+  function parseCourses(text) {
+    const out = {};
+    String(text).replace(/^\uFEFF/, '').split(/\r?\n/).slice(1).forEach((line) => {
+      const f = line.split(',').map((x) => x.trim().replace(/^"|"$/g, ''));
+      const pars = f.slice(2, 11).map(Number);
+      if (!f[0] || !f[1] || pars.length < 9 || pars.some((p) => !(p >= 3 && p <= 6))) return;
+      (out[f[0]] || (out[f[0]] = {}))[f[1]] = pars;
+    });
+    return out;
+  }
+
   // Open-Meteo WMO 날씨 코드 → 한국어
   function weatherLabel(code) {
     if (code == null) return '';
@@ -251,7 +265,7 @@
   const api = {
     CLUBS, RESULTS, FLIGHTS, EXPENSES, SUMMARY_HEADER, SHOT_HEADER, ROUND_HEADER,
     newHole, penalty, isDone, score, gir, sandSave, stats,
-    summaryRow, roundRow, shotRows, toCsv, weatherText,
+    summaryRow, roundRow, shotRows, toCsv, parseCourses, weatherText,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Golf = api;

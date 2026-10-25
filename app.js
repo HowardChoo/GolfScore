@@ -12,7 +12,7 @@
   function load() {
     try {
       const d = JSON.parse(localStorage.getItem(KEY));
-      if (d && Array.isArray(d.rounds)) return { clubs: {}, ...d };
+      if (d && Array.isArray(d.rounds)) return { clubs: {}, ...Golf.migrate(d) };
     } catch (e) { /* 깨진 데이터는 새로 시작 */ }
     return { rounds: [], clubs: {} };
   }
@@ -609,7 +609,7 @@
         const d = JSON.parse(reader.result);
         if (!Array.isArray(d.rounds)) throw new Error();
         if (!confirm(`백업의 라운드 ${d.rounds.length}개로 현재 기록(${db.rounds.length}개)을 바꿀까요?`)) return;
-        db = { clubs: {}, ...d };
+        db = { clubs: {}, ...Golf.migrate(d) };
         save();
         go('home');
         toast('복원했습니다');

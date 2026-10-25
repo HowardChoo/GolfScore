@@ -3,7 +3,9 @@
   'use strict';
 
   // 엑셀 Dictionary 시트 기준 코드
-  const CLUBS = ['D', 'W3', 'W5', 'U4', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9', 'PW', 'AW', 'SW'];
+  const CLUBS = ['D', 'W3', 'W5', 'U4', 'I4', 'I5', 'I6', 'I7', 'I8', 'I9', 'PW', 'FW', 'SW'];
+  // 예전 앱은 클럽 FW(페어웨이 우드)를 AW로 기록했다 — 불러올 때 FW로 바꾼다
+  const OLD_CLUBS = { AW: 'FW' };
   const RESULTS = [
     ['FW', '페어웨이'], ['RG', '러프'], ['HZ', '해저드'], ['OB', 'OB'],
     ['BK', '벙커'], ['FR', '프린지'], ['GR', '그린'],
@@ -65,11 +67,19 @@
     return score(h) <= par ? 'O' : 'X';
   }
 
+  // 저장 데이터·백업의 옛 클럽 코드를 현재 코드로 (그 자리에서 고치고 그대로 돌려준다)
+  function migrate(d) {
+    (d.rounds || []).forEach((r) => (r.holes || []).forEach((h) => (h.shots || []).forEach((x) => {
+      if (OLD_CLUBS[x.c]) x.c = OLD_CLUBS[x.c];
+    })));
+    return d;
+  }
+
   function sum(arr) {
     return arr.reduce((s, x) => s + (x || 0), 0);
   }
 
-  // 라운드 통계 — 엑셀 Raw 블록의 수식과 같은 정의 (FW 안착률만 결과 칸 기준으로 보정)
+  // 라운드 통계 — 엑셀 Raw 블록의 수식과 같은 정의 (FHR은 파4·파5 1ST의 RT가 FW인 비율)
   function stats(round) {
     const pars = round.pars;
     const holes = round.holes;
@@ -264,7 +274,7 @@
 
   const api = {
     CLUBS, RESULTS, FLIGHTS, EXPENSES, SUMMARY_HEADER, SHOT_HEADER, ROUND_HEADER,
-    newHole, penalty, isDone, score, gir, sandSave, stats,
+    newHole, migrate, penalty, isDone, score, gir, sandSave, stats,
     summaryRow, roundRow, shotRows, toCsv, parseCourses, weatherText,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

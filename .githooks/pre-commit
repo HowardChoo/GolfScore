@@ -1,0 +1,20 @@
+#!/bin/sh
+# 커밋할 때 화면 하단 버전을 자동으로 찍는다
+# - 웹 버전: 커밋 시각 (version.js의 web, sw.js의 캐시 VERSION도 같이 바뀌어 휴대폰에 새 버전이 들어간다)
+# - courses.csv 버전: 이번 커밋에 courses.csv가 들어 있으면 오늘 날짜(vYYYYMMDD), 아니면 그대로
+# 켜기 (저장소를 받은 뒤 한 번): git config core.hooksPath .githooks
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+web=$(date '+%Y.%m.%d %H:%M')
+courses=$(sed -n "s/.*courses: '\([^']*\)'.*/\1/p" version.js)
+if git diff --cached --name-only | grep -qx 'courses.csv'; then
+  courses="v$(date '+%Y%m%d')"
+fi
+
+cat > version.js <<JS
+// 홈 화면 하단에 흐리게 보이는 버전. 커밋할 때 .githooks/pre-commit이 자동으로 고친다 (직접 수정하지 않음)
+const APP_VERSION = { web: '$web', courses: '$courses' };
+JS
+sed -i "s/^const VERSION = .*/const VERSION = '$web';/" sw.js
+git add version.js sw.js

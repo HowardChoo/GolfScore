@@ -153,7 +153,7 @@
         </button></li>`;
     }).join('');
     return `
-      <header class="bar"><h1>골프 스코어카드</h1></header>
+      <header class="bar"><h1>MyGolfscore</h1></header>
       <section class="pad">
         <button class="primary big" data-act="new">+ 새 라운드</button>
       </section>
@@ -168,6 +168,7 @@
           <button data-act="backup">백업 파일 저장</button>
           <button data-act="restore">백업 복원</button>
         </div>
+        <p class="version">Web ${esc(APP_VERSION.web)} · courses.csv ${esc(APP_VERSION.courses)}</p>
       </section>`;
   }
 

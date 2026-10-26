@@ -1,6 +1,6 @@
 {
-  "name": "골프 스코어카드",
-  "short_name": "스코어카드",
+  "name": "MyGolfscore",
+  "short_name": "MyGolfscore",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

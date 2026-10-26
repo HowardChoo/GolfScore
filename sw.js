@@ -1,8 +1,8 @@
 // 오프라인 지원: 앱 파일은 캐시 우선, 날씨 API는 네트워크만 사용
-// 앱 파일(courses.csv 포함)을 고치면 VERSION을 올려야 휴대폰에 새 버전이 들어간다
-const VERSION = 'v12';
+// VERSION은 커밋할 때 .githooks/pre-commit이 커밋 시각으로 바꾼다. 바뀌어야 휴대폰에 새 버전이 들어간다
+const VERSION = '2026.10.26 17:03';
 const FILES = [
-  './', 'index.html', 'style.css', 'logic.js', 'app.js', 'manifest.webmanifest', 'courses.csv',
+  './', 'index.html', 'style.css', 'logic.js', 'app.js', 'manifest.webmanifest', 'courses.csv', 'version.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
 ];
 

@@ -297,3 +297,6 @@ small { font-size: 11px; }
   font-size: 15px;
   max-width: 90vw;
 }
+
+/* 홈 하단 버전 표시 */
+.version { margin: 28px 0 8px; text-align: center; font-size: 11px; color: var(--muted); opacity: .6; }

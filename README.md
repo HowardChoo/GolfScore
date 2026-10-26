@@ -1,4 +1,4 @@
-# 골프 스코어카드
+# MyGolfscore
 
 라운드 중에 휴대폰으로 샷(클럽·결과·구질)과 퍼팅을 기록하고, 끝나면 엑셀 Summary 시트에 붙여 넣는 웹앱.
 서버 없이 동작하는 정적 웹(PWA)이라 GitHub Pages에 올려 쓴다. 외부 패키지 없음.
@@ -7,8 +7,10 @@
 
 - `index.html`, `style.css`, `app.js` — 화면
 - `logic.js` — 스코어·통계 계산과 엑셀 내보내기 (DOM 없음, Node에서도 불러올 수 있음)
-- `sw.js` — 오프라인 캐시. **앱 파일을 고치면 `VERSION`을 올려야** 휴대폰에 새 버전이 들어간다
-- `courses.csv` — 기본 골프장·코스 목록 (`COUNTRY_CLUB,COURSE,HOLE1~HOLE9,PAR_TOTAL`, UTF-8). 라운드 설정에서 골프장·코스를 고를 수 있게 된다. 이 기기에 저장된 같은 코스가 있으면 그쪽 파가 우선. 고친 뒤에는 `sw.js`의 `VERSION`도 올린다
+- `sw.js` — 오프라인 캐시. `VERSION`이 바뀌어야 휴대폰에 새 버전이 들어간다 (커밋 때 자동)
+- `version.js` — 홈 화면 하단의 버전 표시 (Web = 커밋 시각, courses.csv = 마지막 수정일 `vYYYYMMDD`). 직접 고치지 않는다
+- `.githooks/pre-commit` — 커밋할 때 `version.js`와 `sw.js`의 `VERSION`을 자동으로 고친다. 저장소를 새로 받으면 `git config core.hooksPath .githooks`를 한 번 실행
+- `courses.csv` — 기본 골프장·코스 목록 (`COUNTRY_CLUB,COURSE,HOLE1~HOLE9,PAR_TOTAL`, UTF-8). 라운드 설정에서 골프장·코스를 고를 수 있게 된다. 이 기기에 저장된 같은 코스가 있으면 그쪽 파가 우선
 - `manifest.webmanifest`, `icons/` — 홈 화면 아이콘
 
 ## 기록 규칙 (엑셀 Dictionary 시트 기준)

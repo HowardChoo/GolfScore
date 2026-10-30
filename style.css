@@ -60,6 +60,23 @@ input {
   background: var(--card);
 }
 input.num { width: 90px; text-align: right; }
+
+/* 입력칸 오른쪽 ▾ 위에 투명한 select를 덮어, 누르면 기기 기본 선택 화면이 뜬다 */
+.combo { position: relative; }
+.form label .combo { margin-top: 2px; }
+.form label .combo input { margin-top: 0; }
+.combo.pick input { padding-right: 44px; }
+.combo.pick::after {
+  content: '▾';
+  position: absolute; top: 0; right: 0; bottom: 0; width: 44px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 16px; pointer-events: none;
+}
+.combo select {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 44px;
+  opacity: 0; font-size: 16px; cursor: pointer;
+}
+
 input.num.wide { width: 130px; }
 
 h1 { margin: 0; font-size: 18px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

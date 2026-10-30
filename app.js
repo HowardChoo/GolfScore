@@ -67,6 +67,22 @@
     ));
   }
 
+  // ↕ 등 일부 화살표는 iOS에서 이모지로 그려진다. 표시할 때만 텍스트 표현(U+FE0E)을 붙인다 (저장값은 그대로)
+  function arrows(s) {
+    return s.replace(/[↔-↙]/g, '  function pad(n) {︎');
+  }
+
+  // 입력칸 + 목록 선택(▾). iPhone은 datalist 목록을 보여 주지 않아 select로 고르게 한다
+  function combo(field, value, list, listId, placeholder) {
+    return `<div class="combo${list.length ? ' pick' : ''}">
+        <input data-field="${field}" list="${listId}" value="${esc(value)}" placeholder="${esc(placeholder)}">
+        ${list.length ? `<select data-field="${field}" aria-label="목록에서 선택">
+          <option value="${esc(value)}" selected disabled hidden>목록에서 선택</option>
+          ${list.map((v) => `<option value="${esc(v)}">${esc(v)}</option>`).join('')}
+        </select>` : ''}
+      </div>`;
+  }
+
   function pad(n) {
     return String(n).padStart(2, '0');
   }
@@ -233,19 +249,19 @@
           <label>날짜<input type="date" data-field="date" value="${esc(s.date)}"></label>
           <label>티타임<input type="time" data-field="time" value="${esc(s.time)}"></label>
         </div>
-        <label>골프장<input data-field="club" list="clubList" value="${esc(s.club)}" placeholder="예: 클럽모우CC"></label>
+        <label>골프장${combo('club', s.club, clubNames(), 'clubList', '예: 클럽모우CC')}</label>
         <datalist id="clubList">${clubNames().map((c) => `<option value="${esc(c)}">`).join('')}</datalist>
         <datalist id="courseList">${courses.map((c) => `<option value="${esc(c)}">`).join('')}</datalist>
 
-        <label>OUT 코스 (1~9번)<input data-field="courseOut" list="courseList" value="${esc(s.courseOut)}" placeholder="예: 마운틴"></label>
+        <label>OUT 코스 (1~9번)${combo('courseOut', s.courseOut, courses, 'courseList', '예: 마운틴')}</label>
         <div class="pars">${parButtons('out', s.parsOut)}</div>
-        <label>IN 코스 (10~18번)<input data-field="courseIn" list="courseList" value="${esc(s.courseIn)}" placeholder="예: 오아시스"></label>
+        <label>IN 코스 (10~18번)${combo('courseIn', s.courseIn, courses, 'courseList', '예: 오아시스')}</label>
         <div class="pars">${parButtons('in', s.parsIn)}</div>
         <p class="muted small">파 버튼을 누르면 3 → 4 → 5로 바뀝니다. 코스는 저장되어 다음에 이름만 고르면 자동으로 채워집니다.</p>
 
         <h2>동반자</h2>
         <datalist id="nameList">${companionNames().map((n) => `<option value="${esc(n)}">`).join('')}</datalist>
-        ${[0, 1, 2].map((i) => `<input data-field="comp${i}" list="nameList" value="${esc(s.companions[i])}" placeholder="동반자 ${i + 1}">`).join('')}
+        ${[0, 1, 2].map((i) => combo(`comp${i}`, s.companions[i], companionNames(), 'nameList', `동반자 ${i + 1}`)).join('')}
 
         <h2>위치 (날씨 조회용)</h2>
         <div class="row center">
@@ -340,7 +356,7 @@
     return list.map((item) => {
       const [code, label] = Array.isArray(item) ? item : [item, ''];
       return `<button class="ch ${code === selected ? 'on' : ''}" data-act="pick" data-arg="${group}:${esc(code)}">
-        ${esc(code)}${label ? `<small>${esc(label)}</small>` : ''}</button>`;
+        ${arrows(esc(code))}${label ? `<small>${esc(label)}</small>` : ''}</button>`;
     }).join('');
   }
 
@@ -355,7 +371,7 @@
     const d = ui.draft;
     const shots = h.shots.map((x, k) => `
       <li><button class="shot ${ui.edit === k ? 'editing' : ''}" data-act="editShot" data-arg="${k}">
-        <b>${k + 1}</b><span>${esc(x.c)}</span><span>${esc(x.b || '-')}</span><span>${esc(x.r)}</span>
+        <b>${k + 1}</b><span>${esc(x.c)}</span><span>${arrows(esc(x.b || '-'))}</span><span>${esc(x.r)}</span>
       </button></li>`).join('');
     const autoPen = Golf.penalty({ ...h, pen: null });
     const pen = Golf.penalty(h);
@@ -483,7 +499,7 @@
           ${stat('DOUBLE+', s.overDouble)}
         </div>
         <div class="stats flights">
-          ${stat('ST↑', pct(s.straight))}${stat('SL→', pct(s.slice))}${stat('PS↗', pct(s.push))}${stat('HK←', pct(s.hook))}${stat('PU↖', pct(s.pull))}${stat('FA↓', pct(s.fat))}${stat('TO↕', pct(s.top))}
+          ${stat('ST↑', pct(s.straight))}${stat('SL→', pct(s.slice))}${stat('PS↗', pct(s.push))}${stat('HK←', pct(s.hook))}${stat('PU↖', pct(s.pull))}${stat('FA↓', pct(s.fat))}${stat(arrows('TO↕'), pct(s.top))}
         </div>
       </section>
 
@@ -727,6 +743,8 @@
   app.addEventListener('change', (e) => {
     const el = e.target.closest('[data-field]');
     if (!el) return;
+    // combo의 목록에서 고르면 옆 입력칸에도 넣는다 (동반자 칸은 다시 그리지 않으므로)
+    if (el.tagName === 'SELECT' && el.parentNode.classList.contains('combo')) el.parentNode.querySelector('input').value = el.value;
     if (ui.view === 'setup') onSetupField(el.dataset.field, el.value);
     else if (ui.view === 'summary') onSummaryField(el.dataset.field, el.value, el);
   });

@@ -69,7 +69,7 @@
 
   // ↕ 등 일부 화살표는 iOS에서 이모지로 그려진다. 표시할 때만 텍스트 표현(U+FE0E)을 붙인다 (저장값은 그대로)
   function arrows(s) {
-    return s.replace(/[↔-↙]/g, '  function pad(n) {︎');
+    return s.replace(/[↔-↙]/g, '$&︎');
   }
 
   // 입력칸 + 목록 선택(▾). iPhone은 datalist 목록을 보여 주지 않아 select로 고르게 한다
@@ -77,7 +77,7 @@
     return `<div class="combo${list.length ? ' pick' : ''}">
         <input data-field="${field}" list="${listId}" value="${esc(value)}" placeholder="${esc(placeholder)}">
         ${list.length ? `<select data-field="${field}" aria-label="목록에서 선택">
-          <option value="${esc(value)}" selected disabled hidden>목록에서 선택</option>
+          <option value="" selected disabled hidden>목록에서 선택</option>
           ${list.map((v) => `<option value="${esc(v)}">${esc(v)}</option>`).join('')}
         </select>` : ''}
       </div>`;
@@ -744,9 +744,13 @@
     const el = e.target.closest('[data-field]');
     if (!el) return;
     // combo의 목록에서 고르면 옆 입력칸에도 넣는다 (동반자 칸은 다시 그리지 않으므로)
-    if (el.tagName === 'SELECT' && el.parentNode.classList.contains('combo')) el.parentNode.querySelector('input').value = el.value;
-    if (ui.view === 'setup') onSetupField(el.dataset.field, el.value);
-    else if (ui.view === 'summary') onSummaryField(el.dataset.field, el.value, el);
+    let value = el.value;
+    if (el.tagName === 'SELECT' && el.parentNode.classList.contains('combo')) {
+      el.parentNode.querySelector('input').value = value;
+      el.selectedIndex = 0; // 같은 항목을 다시 골라도 change가 뜨도록 안내 문구로 되돌린다
+    }
+    if (ui.view === 'setup') onSetupField(el.dataset.field, value);
+    else if (ui.view === 'summary') onSummaryField(el.dataset.field, value, el);
   });
 
   document.getElementById('restoreFile').addEventListener('change', (e) => {
